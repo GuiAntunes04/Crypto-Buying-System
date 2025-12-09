@@ -4,14 +4,13 @@ Sistema desenvolvido para permitir que usuários comprem criptomoedas através d
 
 ## 📋 Descrição
 
-Este sistema permite que usuários cadastrem suas chaves de API da Binance e realizem compras de criptomoedas de forma segura. O sistema utiliza banco de dados NoSQL (MongoDB) para armazenar os dados dos usuários, chaves de API e histórico de transações.
+Este sistema permite que usuários cadastrem suas chaves de API da Binance e realizem compras de criptomoedas de forma segura. Além disso, os usuários podem programar ordens de compra/venda que serão executadas automaticamente quando o preço da criptomoeda atingir um valor determinado. O sistema utiliza banco de dados NoSQL (MongoDB) para armazenar os dados dos usuários, chaves de API, ordens programadas e histórico de transações.
 
 ## 🎯 Funcionalidades Principais
 
-- **CRUD de Usuários**: Cadastro, consulta, atualização e remoção de usuários
-- **CRUD de Chaves Binance**: Gerenciamento seguro das chaves de API da Binance de cada usuário
-- **CRUD de Transações**: Registro e consulta de todas as transações de compra realizadas
-- **Integração com Binance API**: Consulta de cotações em tempo real e execução de ordens de compra
+- **Compra de Criptomoedas**: Realização de compras de criptomoedas através da API da Binance
+- **Ordens Programadas**: Programação de ordens de compra/venda que são executadas automaticamente quando o preço atinge um valor determinado (stop orders)
+- **Monitoramento de Preços**: Acompanhamento em tempo real das cotações para execução automática das ordens programadas
 - **Segurança**: Criptografia das chaves secretas armazenadas no banco de dados
 
 ## 🛠 Tecnologias
@@ -33,7 +32,8 @@ Este sistema permite que usuários cadastrem suas chaves de API da Binance e rea
 O sistema armazena:
 - **Usuários**: Informações de cadastro e autenticação
 - **Chaves Binance**: API Key e Secret Key (criptografadas) vinculadas a cada usuário
-- **Transações**: Histórico de compras realizadas com detalhes de cada operação
+- **Ordens Programadas**: Ordens de compra/venda com preço-alvo que serão executadas automaticamente
+- **Transações**: Histórico de compras e vendas realizadas com detalhes de cada operação
 
 ## ⚠️ Importante
 
