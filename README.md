@@ -8,7 +8,7 @@ Este sistema permite que usuários cadastrem suas chaves de API da Binance e rea
 
 ## 🎯 Funcionalidades Principais
 
-- **Compra de Criptomoedas**: Realização de compras de criptomoedas através da API da Binance
+- **Compra de Criptomoedas**: Realização de compras e vendas de criptomoedas através da API da Binance
 - **Ordens Programadas**: Programação de ordens de compra/venda que são executadas automaticamente quando o preço atinge um valor determinado (stop orders)
 - **Monitoramento de Preços**: Acompanhamento em tempo real das cotações para execução automática das ordens programadas
 - **Segurança**: Criptografia das chaves secretas armazenadas no banco de dados
