@@ -15,7 +15,7 @@ Este sistema permite que usuários cadastrem suas chaves de API da Binance e rea
 
 ## 🛠 Tecnologias
 
-- **Backend**: Node.js com Express
+- **Backend**: Python
 - **Banco de Dados**: MongoDB (NoSQL)
 - **Integração**: API da Binance
 - **Autenticação**: JWT
