@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',  # 👈 DRF
-    'api'            # 👈 nosso app
+    'api' ,           # 👈 nosso app
+    'binance_integration',
 ]
 
 MIDDLEWARE = [
@@ -130,3 +131,6 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+FERNET_KEY = "OM-ZF8h9fWFSgFNLNtEt3-SrM-_LfgE5v7QMLFRUuOQ="
+
