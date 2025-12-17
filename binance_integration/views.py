@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-
+from rest_framework.generics import ListAPIView
 from .serializers import OrderSerializer, OrderResponseSerializer
 from .services.binance_service import BinanceService
-from .models import BinanceKey
+from .models import BinanceKey, Order
 
 
 # 🔹 VIEW PARA SALVAR AS CHAVES DA BINANCE
@@ -48,3 +48,25 @@ class MarketBuyView(APIView):
 
         response = OrderResponseSerializer(order)
         return Response(response.data, status=status.HTTP_201_CREATED)
+    
+class OrderListView(ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = OrderResponseSerializer
+
+    def get_queryset(self):
+        queryset = Order.objects.filter(user=self.request.user)
+
+        symbol = self.request.query_params.get('symbol')
+        side = self.request.query_params.get('side')
+        status = self.request.query_params.get('status')
+
+        if symbol:
+            queryset = queryset.filter(symbol=symbol)
+
+        if side:
+            queryset = queryset.filter(side=side)
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        return queryset.order_by('-created_at')
