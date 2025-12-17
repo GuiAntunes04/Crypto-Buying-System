@@ -1,12 +1,13 @@
 # services/binance_service.py
 from .binance_client import BinanceClientService
-from ..models import BinanceKey
+from ..models import BinanceKey, Order
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
 
 
 class BinanceService:
     def __init__(self, user):
+        self.user = user 
         try:
             keys = BinanceKey.objects.get(user=user)
         except ObjectDoesNotExist:
@@ -56,9 +57,24 @@ class BinanceService:
             raise ValueError("Quantidade inválida")
 
         symbol_info = self.validate_symbol(symbol)
-        price = self.client.get_price(symbol)  # já retorna Decimal
+
+        price = Decimal(self.client.get_price(symbol))
         self.validate_quantity(symbol_info, quantity)
         self.validate_balance(price, quantity)
 
-        return self.client.buy_market(symbol, float(quantity))
+        response = self.client.buy_market(symbol, float(quantity))
+
+        order = Order.objects.create(
+            user=self.user,
+            symbol=symbol,
+            side='BUY',
+            order_id=response['orderId'],
+            price=Decimal(response['fills'][0]['price']),
+            quantity=Decimal(response['executedQty']),
+            quote_quantity=Decimal(response['cummulativeQuoteQty']),
+            status=response['status'],
+            raw_response=response
+        )
+
+        return order
     

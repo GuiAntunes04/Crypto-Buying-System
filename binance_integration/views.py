@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 
-from .serializers import OrderSerializer
+from .serializers import OrderSerializer, OrderResponseSerializer
 from .services.binance_service import BinanceService
 from .models import BinanceKey
 
@@ -46,4 +46,5 @@ class MarketBuyView(APIView):
             quantity=serializer.validated_data['quantity']
         )
 
-        return Response(order, status=status.HTTP_201_CREATED)
+        response = OrderResponseSerializer(order)
+        return Response(response.data, status=status.HTTP_201_CREATED)
