@@ -32,8 +32,6 @@ def save_binance_keys(request):
         status=status.HTTP_201_CREATED
     )
 
-
-# 🔹 VIEW DE COMPRA (A SUA, INTACTA)
 class MarketBuyView(APIView):
     permission_classes = [IsAuthenticated]
 

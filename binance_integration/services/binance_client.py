@@ -1,6 +1,6 @@
 import time
 from binance.client import Client
-
+from decimal import Decimal
 
 class BinanceClientService:
     def __init__(self, api_key: str, secret_key: str):
@@ -24,3 +24,14 @@ class BinanceClientService:
             quantity=quantity,
             recvWindow=10000
         )
+    
+    def get_symbol_info(self, symbol: str):
+        return self.client.get_symbol_info(symbol)
+    
+    def get_price(self, symbol: str):
+        price = self.client.get_symbol_ticker(symbol=symbol)
+        return Decimal(price['price'])
+    
+    def get_balance(self, asset: str):
+        balance = self.client.get_asset_balance(asset)
+        return Decimal(balance['free'])
