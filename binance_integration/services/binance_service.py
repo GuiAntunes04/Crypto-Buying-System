@@ -45,31 +45,32 @@ class BinanceService:
         if quantity < min_qty:
             raise ValueError(f"Quantidade mínima: {min_qty}")
 
-        # evita erro de precisão
-        remainder = (quantity - min_qty) % step
-
-        if remainder != 0:
+        if (quantity - min_qty) % step != 0:
             raise ValueError(f"Quantidade deve ser múltiplo de {step}")
 
-    
-    def buy(self, symbol: str, quantity):
+    def buy(self, symbol: str, quantity: Decimal):
         if quantity <= 0:
             raise ValueError("Quantidade inválida")
 
         symbol_info = self.validate_symbol(symbol)
 
-        price = Decimal(self.client.get_price(symbol))
+        price = Decimal(str(self.client.get_price(symbol)))
         self.validate_quantity(symbol_info, quantity)
         self.validate_balance(price, quantity)
 
         response = self.client.buy_market(symbol, float(quantity))
+
+        avg_price = (
+            Decimal(response['cummulativeQuoteQty']) /
+            Decimal(response['executedQty'])
+        )
 
         order = Order.objects.create(
             user=self.user,
             symbol=symbol,
             side='BUY',
             order_id=response['orderId'],
-            price=Decimal(response['fills'][0]['price']),
+            price=avg_price,
             quantity=Decimal(response['executedQty']),
             quote_quantity=Decimal(response['cummulativeQuoteQty']),
             status=response['status'],
@@ -77,4 +78,5 @@ class BinanceService:
         )
 
         return order
-    
+
+        
