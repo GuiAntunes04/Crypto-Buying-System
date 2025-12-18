@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import save_binance_keys, MarketBuyView, OrderListView, MarketSellView, PositionListView, RealizedPnlView
+from .views_mongo import MongoMarketLogView
 
 urlpatterns = [
     path('keys/', save_binance_keys),
@@ -8,4 +9,5 @@ urlpatterns = [
     path('orders/', OrderListView.as_view()),
     path('positions/', PositionListView.as_view()),
     path('pnl/realized/', RealizedPnlView.as_view()),
+    path('mongo/market-logs/', MongoMarketLogView.as_view()),
 ]
