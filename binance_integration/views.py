@@ -65,6 +65,38 @@ class MarketBuyView(APIView):
             status=status.HTTP_201_CREATED
         )
     
+class MarketSellView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = OrderSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        service = BinanceService(request.user)
+
+        try:
+            order = service.sell(
+                symbol=serializer.validated_data['symbol'],
+                quantity=serializer.validated_data['quantity']
+            )
+
+        except ValueError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except RuntimeError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_502_BAD_GATEWAY
+            )
+
+        return Response(
+            OrderResponseSerializer(order).data,
+            status=status.HTTP_201_CREATED
+        )
+    
 class OrderListView(ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = OrderResponseSerializer

@@ -47,6 +47,16 @@ class BinanceService:
 
         if (quantity - min_qty) % step != 0:
             raise ValueError(f"Quantidade deve ser múltiplo de {step}")
+        
+    def validate_asset_balance(self, symbol: str, quantity: Decimal):
+        asset = symbol.replace('USDT', '')
+        balance = self.client.get_balance(asset)
+
+        if balance < quantity:
+            raise ValueError(
+                f"Saldo insuficiente de {asset}. "
+                f"Disponível: {balance}, necessário: {quantity}"
+            )
 
     def buy(self, symbol: str, quantity: Decimal):
         if quantity <= 0:
@@ -78,5 +88,35 @@ class BinanceService:
         )
 
         return order
+    
+    def sell(self, symbol: str, quantity: Decimal):
+        if quantity <= 0:
+            raise ValueError("Quantidade inválida")
 
-        
+        symbol_info = self.validate_symbol(symbol)
+        self.validate_quantity(symbol_info, quantity)
+        self.validate_asset_balance(symbol, quantity)
+
+        response = self.client.sell_market(symbol, float(quantity))
+
+        avg_price = (
+            Decimal(response['cummulativeQuoteQty']) /
+            Decimal(response['executedQty'])
+        )
+
+        order = Order.objects.create(
+            user=self.user,
+            symbol=symbol,
+            side='SELL',
+            order_id=response['orderId'],
+            price=avg_price,
+            quantity=Decimal(response['executedQty']),
+            quote_quantity=Decimal(response['cummulativeQuoteQty']),
+            status=response['status'],
+            raw_response=response
+        )
+
+        return order
+
+    
+    

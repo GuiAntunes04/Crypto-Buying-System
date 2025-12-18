@@ -28,6 +28,19 @@ class BinanceClientService:
             )
         except BinanceAPIException as e:
             raise RuntimeError(e.message)
+        
+    def sell_market(self, symbol: str, quantity: float):
+        try:
+            return self.client.create_order(
+                symbol=symbol,
+                side=Client.SIDE_SELL,
+                type=Client.ORDER_TYPE_MARKET,
+                quantity=quantity,
+                recvWindow=10000
+            )
+        except BinanceAPIException as e:
+            raise RuntimeError(e.message)
+
     
     def get_symbol_info(self, symbol: str):
         return self.client.get_symbol_info(symbol)
