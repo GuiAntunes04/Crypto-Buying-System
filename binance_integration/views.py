@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
-from .serializers import OrderSerializer, OrderResponseSerializer
+from .serializers import OrderSerializer, OrderResponseSerializer, PositionSerializer
 from .services.binance_service import BinanceService
 from .models import BinanceKey, Order
 
@@ -118,3 +118,13 @@ class OrderListView(ListAPIView):
             queryset = queryset.filter(status=status)
 
         return queryset.order_by('-created_at')
+    
+class PositionListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        service = BinanceService(request.user)
+        positions = service.get_positions()
+
+        serializer = PositionSerializer(positions, many=True)
+        return Response(serializer.data)

@@ -3,6 +3,7 @@ from .binance_client import BinanceClientService
 from ..models import BinanceKey, Order
 from django.core.exceptions import ObjectDoesNotExist
 from decimal import Decimal
+from django.db.models import Sum
 
 
 class BinanceService:
@@ -117,6 +118,56 @@ class BinanceService:
         )
 
         return order
+    
+    def get_positions(self):
+        positions = []
+
+        symbols = (
+            Order.objects
+            .filter(user=self.user)
+            .values_list('symbol', flat=True)
+            .distinct()
+        )
+
+        for symbol in symbols:
+            buys = Order.objects.filter(
+                user=self.user,
+                symbol=symbol,
+                side='BUY',
+                status='FILLED'
+            )
+
+            sells = Order.objects.filter(
+                user=self.user,
+                symbol=symbol,
+                side='SELL',
+                status='FILLED'
+            )
+
+            qty_buy = buys.aggregate(total=Sum('quantity'))['total'] or Decimal('0')
+            qty_sell = sells.aggregate(total=Sum('quantity'))['total'] or Decimal('0')
+
+            qty_open = qty_buy - qty_sell
+            if qty_open <= 0:
+                continue
+
+            cost = buys.aggregate(total=Sum('quote_quantity'))['total']
+            avg_price = cost / qty_buy
+
+            current_price = self.client.get_price(symbol)
+
+            pnl_unrealized = (current_price - avg_price) * qty_open
+
+            positions.append({
+                'symbol': symbol,
+                'quantity': qty_open,
+                'avg_price': avg_price,
+                'current_price': current_price,
+                'pnl_unrealized': pnl_unrealized
+            })
+
+        return positions
+
 
     
     
