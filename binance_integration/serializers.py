@@ -22,3 +22,7 @@ class PositionSerializer(serializers.Serializer):
     avg_price = serializers.DecimalField(max_digits=18, decimal_places=8)
     current_price = serializers.DecimalField(max_digits=18, decimal_places=8)
     pnl_unrealized = serializers.DecimalField(max_digits=18, decimal_places=8)
+
+class RealizedPnlSerializer(serializers.Serializer):
+    symbol = serializers.CharField()
+    realized_pnl = serializers.DecimalField(max_digits=18, decimal_places=8)

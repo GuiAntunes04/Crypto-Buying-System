@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.generics import ListAPIView
-from .serializers import OrderSerializer, OrderResponseSerializer, PositionSerializer
+from .serializers import OrderSerializer, OrderResponseSerializer, PositionSerializer, RealizedPnlSerializer
 from .services.binance_service import BinanceService
 from .models import BinanceKey, Order
 
@@ -128,3 +128,14 @@ class PositionListView(APIView):
 
         serializer = PositionSerializer(positions, many=True)
         return Response(serializer.data)
+
+class RealizedPnlView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        service = BinanceService(request.user)
+        data = service.get_realized_pnl()
+
+        serializer = RealizedPnlSerializer(data, many=True)
+        return Response(serializer.data)
+

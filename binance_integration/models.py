@@ -17,6 +17,10 @@ class BinanceKey(models.Model):
     def get_secret_key(self) -> str:
         return cipher.decrypt(self.secret_key).decode()
 
+from django.db import models
+from django.contrib.auth.models import User
+
+
 class Order(models.Model):
     SIDE_CHOICES = (
         ('BUY', 'Buy'),
@@ -37,5 +41,12 @@ class Order(models.Model):
 
     raw_response = models.JSONField()
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'symbol']),
+            models.Index(fields=['created_at']),
+        ]
+
     def __str__(self):
         return f"{self.symbol} {self.side} #{self.order_id}"
+

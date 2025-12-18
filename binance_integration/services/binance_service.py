@@ -167,6 +167,55 @@ class BinanceService:
             })
 
         return positions
+    
+    def get_realized_pnl(self):
+        results = []
+
+        symbols = (
+            Order.objects
+            .filter(user=self.user)
+            .values_list('symbol', flat=True)
+            .distinct()
+        )
+
+        for symbol in symbols:
+            buys = Order.objects.filter(
+                user=self.user,
+                symbol=symbol,
+                side='BUY',
+                status='FILLED'
+            ).order_by('created_at')
+
+            sells = Order.objects.filter(
+                user=self.user,
+                symbol=symbol,
+                side='SELL',
+                status='FILLED'
+            ).order_by('created_at')
+
+            total_buy_qty = Decimal('0')
+            total_buy_cost = Decimal('0')
+            realized_pnl = Decimal('0')
+
+            for buy in buys:
+                total_buy_qty += buy.quantity
+                total_buy_cost += buy.quote_quantity
+
+            if total_buy_qty == 0:
+                continue
+
+            avg_price = total_buy_cost / total_buy_qty
+
+            for sell in sells:
+                realized_pnl += (sell.price - avg_price) * sell.quantity
+
+            results.append({
+                'symbol': symbol,
+                'realized_pnl': realized_pnl
+            })
+
+        return results
+
 
 
     

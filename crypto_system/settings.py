@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -133,4 +134,16 @@ SIMPLE_JWT = {
 }
 
 FERNET_KEY = "OM-ZF8h9fWFSgFNLNtEt3-SrM-_LfgE5v7QMLFRUuOQ="
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'crypto_system',
+        'USER': 'crypto_user',
+        'PASSWORD': os.getenv('DB_PASSWORD', 'sua_senha_local'),
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+
 
