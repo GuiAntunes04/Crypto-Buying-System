@@ -1,0 +1,16 @@
+# Segurança e Segredos
+.env
+
+# Ambientes Virtuais
+venv/
+
+# Python (Cache e Bytecode)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE - VS Code
+.vscode/
+
+# Logs e Dados Temporários
+*.log
