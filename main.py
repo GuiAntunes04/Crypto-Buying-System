@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
 from typing import List
 from datetime import datetime
@@ -35,9 +36,9 @@ def get_collection():
 
 # -------- ROTAS --------
 
-@app.get("/")
-def home():
-    return {"status": "online"}
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 
 @app.post("/transacoes/batch")
@@ -64,17 +65,28 @@ def patrimonio():
         collection = get_collection()
 
         pipeline = [
-            {
-                "$group": {
-                    "_id": "$ticker",
-                    "total_investido": {
-                        "$sum": {
-                            "$multiply": ["$quantidade", "$preco_unitario"]
-                        }
-                    }
-                }
+    {
+        "$project": {
+            "ativo": 1,
+            "tipo_normalizado": { "$toLower": "$tipo" },
+            "valor": {
+                "$cond": [
+                    { "$eq": [{ "$toLower": "$tipo" }, "compra"] },
+                    { "$multiply": ["$quantidade", "$preco_unitario"] },
+                    { "$multiply": ["$quantidade", "$preco_unitario", -1] }
+                ]
             }
-        ]
+        }
+    },
+    {
+        "$group": {
+            "_id": "$ativo",
+            "patrimonio_total": { "$sum": "$valor" }
+        }
+    }
+]
+
+
 
         return list(collection.aggregate(pipeline))
 
@@ -96,17 +108,26 @@ def deletar_usuario(usuario_id: str):
 def patrimonio_por_usuario():
     collection = get_collection()
     pipeline = [
-        {
-            "$group": {
-                "_id": "$usuario_id",
-                "total_investido": {
-                    "$sum": {
-                        "$multiply": ["$quantidade", "$preco_unitario"]
-                    }
-                }
+    {
+        "$project": {
+            "usuario_id": 1,
+            "valor": {
+                "$cond": [
+                    { "$eq": [{ "$toLower": "$tipo" }, "compra"] },
+                    { "$multiply": ["$quantidade", "$preco_unitario"] },
+                    { "$multiply": ["$quantidade", "$preco_unitario", -1] }
+                ]
             }
         }
-    ]
+    },
+    {
+        "$group": {
+            "_id": "$usuario_id",
+            "patrimonio": { "$sum": "$valor" }
+        }
+    }
+]
+
     return list(collection.aggregate(pipeline))
 
 @app.get("/transacoes/busca")
