@@ -39,7 +39,7 @@ if pagina == "Dashboard":
 
     st.subheader("👤 Patrimônio por Usuário")
 
-    response = requests.get(f"{API_URL}/analytics/usuario")
+    response = requests.get(f"{API_URL}/patrimonio/usuario")
 
     if response.status_code == 200:
         data = response.json()
