@@ -14,3 +14,7 @@ __pycache__/
 
 # Logs e Dados Temporários
 *.log
+
+#.py
+test_mongo.py
+models.py
