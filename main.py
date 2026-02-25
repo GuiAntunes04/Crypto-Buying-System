@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List
 from datetime import datetime
 from database import get_db_client
+from redis_client import get_redis_client
 
 app = FastAPI(title="Crypto Buying System")
 
@@ -62,8 +63,38 @@ def criar_indices():
 def startup_event():
     criar_indices()
 
+    # -------- SESSÃO (Redis) --------
+
+SESSION_TTL = 60  # segundos
+
+def criar_ou_renovar_sessao(usuario_id: str):
+    redis_client = get_redis_client()
+    redis_client.set(
+        f"sessao:{usuario_id}",
+        "ativa",
+        ex=SESSION_TTL
+    )
+
+def validar_sessao(usuario_id: str):
+    redis_client = get_redis_client()
+    sessao = redis_client.get(f"sessao:{usuario_id}")
+
+    if not sessao:
+        raise HTTPException(
+            status_code=401,
+            detail="Sessão expirada. Faça login novamente."
+        )
+
 
 # -------- ROTAS --------
+
+@app.post("/login/{usuario_id}")
+def login(usuario_id: str):
+    criar_ou_renovar_sessao(usuario_id)
+    return {
+        "mensagem": f"Sessão iniciada para {usuario_id}",
+        "expira_em_segundos": SESSION_TTL
+    }
 
 @app.get("/", include_in_schema=False)
 def root():
