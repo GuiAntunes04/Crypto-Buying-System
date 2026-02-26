@@ -1,45 +1,154 @@
-﻿# Sistema de Compra e Venda de Criptoativos
+# Sistema de Compra e Venda de Criptoativos
 
-Sistema desenvolvido para permitir que usuários gerenciem suas carteiras de criptomoedas, acompanhem transações em tempo real e visualizem análises de desempenho através de uma interface intuitiva.
+API para gerenciamento de operações de compra e venda de criptomoedas, com cálculo de lucro/prejuízo, consulta de preços em tempo real e camada de cache utilizando Redis. O sistema foi desenvolvido com foco em desempenho, escalabilidade e boas práticas de arquitetura para aplicações NoSQL.
 
-## 📋 Descrição
+---
 
-Este sistema centraliza a gestão de ativos digitais, permitindo que o usuário registre suas operações de compra e venda e obtenha insights automáticos sobre seu patrimônio. Através da integração com o MongoDB, o sistema oferece uma busca rápida e análises detalhadas da distribuição geográfica e financeira dos investimentos.
+## Descrição
 
-## 🎯 Funcionalidades Principais
+O sistema permite que usuários registrem transações de criptoativos e acompanhem o desempenho consolidado da carteira. A aplicação fornece:
 
-- **Gestão de Portfólio**: O usuário pode cadastrar, visualizar, editar e excluir suas transações de compra e venda de criptomoedas.
-- **Importação de Histórico**: Possibilidade de carregar grandes volumes de transações passadas de uma só vez para atualizar a carteira rapidamente.
-- **Painel de Analytics**: Visualização de indicadores de desempenho, como o valor total investido, lucro/prejuízo estimado e volume por ativo.
-- **Filtros Inteligentes**: Busca avançada de transações por nome do ativo, períodos de tempo ou localização geográfica da operação.
-- **Monitoramento em Tempo Real**: Consulta de preços atuais de mercado via integração com a API da Binance.
+- Cálculo automático de posição média
+- Apuração de lucro ou prejuízo não realizado
+- Consulta de preços de mercado em tempo real
+- Cache de dados com Redis
+- Processamento assíncrono via Publish/Subscribe
 
-## 🛠 Tecnologias
+A aplicação é exposta por meio de uma API REST construída com FastAPI e utiliza MongoDB Atlas como banco de dados principal.
 
-- **Linguagem Principal**: Python
-- **Framework API**: FastAPI
-- **Banco de Dados**: MongoDB Atlas (NoSQL)
-- **Visualização**: Streamlit
-- **Integração**: API da Binance
+---
 
-## 📊 Estrutura de Dados (Modelo de Documento)
+## Funcionalidades
 
-O sistema organiza as informações em documentos NoSQL, permitindo flexibilidade e rapidez na consulta de:
-- **Dados do Ativo**: Ticker, nome e valor de mercado.
-- **Detalhes da Ordem**: Quantidade negociada e preço de execução.
-- **Dados Geográficos**: Localização de registro da transação para auditoria e segurança.
+### 1. Gestão de Transações
+- Cadastro de operações de compra e venda
+- Listagem por usuário
+- Atualização e exclusão de registros
+- Filtros por ativo e período
 
-## 🔧 Como Rodar o Projeto
+### 2. Cálculo de Performance
+- Preço médio por ativo
+- Quantidade total em carteira
+- Valor total investido
+- Valor atual de mercado
+- Lucro ou prejuízo estimado
 
-1. Clone o repositório.
-2. Crie um ambiente virtual: `python -m venv venv`.
-3. Instale as dependências: `pip install -r requirements.txt`.
-4. Configure suas credenciais no arquivo `.env`.
-5. Inicie a API e o Dashboard conforme as instruções na pasta `docs`.
+### 3. Integração com API de Mercado
+- Consulta de preço em tempo real via Binance US
+- Tratamento de erro para restrições regionais
+- Timeout configurado para evitar bloqueios
 
-## 📝 Observações Técnicas (Requisitos Atendidos)
+### 4. Redis (Cache e Mensageria)
+- Cache de preços para reduzir chamadas externas
+- Armazenamento temporário de dados de analytics
+- Uso de variáveis em memória para acesso rápido
+- Implementação de Publish/Subscribe para processamento assíncrono
 
-- Persistência em nuvem via **MongoDB Atlas**.
-- Endpoints de alta performance com **FastAPI**.
-- Uso de **Aggregation Pipelines** para processamento de dados.
-- Indexação avançada (**Text e Geosphere2d**) para otimização de buscas.
+### 5. Analytics
+- Endpoint consolidado de resumo por usuário
+- Processamento otimizado com aggregation pipeline do MongoDB
+- Redução de carga através de cache Redis
+
+---
+
+## Arquitetura
+
+Estrutura modular do projeto:
+
+/routes  
+/services  
+/database  
+/subscriber.py  
+/main.py  
+
+- Routes: definição dos endpoints
+- Services: regras de negócio
+- Database: conexão com MongoDB
+- Subscriber: consumidor de eventos Redis
+- Main: inicialização da aplicação
+
+---
+
+## Tecnologias Utilizadas
+
+- Python 3.11
+- FastAPI
+- MongoDB Atlas
+- Redis
+- Uvicorn
+- Requests
+- Python-dotenv
+
+---
+
+## Modelo de Dados (MongoDB)
+
+Cada transação contém:
+
+- usuario_id
+- ticker
+- tipo (compra ou venda)
+- quantidade
+- preco_unitario
+- data
+- localizacao (opcional)
+
+A modelagem orientada a documento permite flexibilidade e expansão futura.
+
+---
+
+## Requisitos Atendidos
+
+- Banco NoSQL em nuvem (MongoDB Atlas)
+- API REST com FastAPI
+- Uso de Aggregation Pipeline
+- Indexação para otimização de busca
+- Cache com Redis
+- Implementação de Publish/Subscribe
+- Deploy em ambiente cloud
+
+---
+
+## Como Executar Localmente
+
+1. Clonar o repositório:
+   git clone <url-do-repositorio>
+
+2. Criar ambiente virtual:
+   python -m venv venv
+
+3. Ativar ambiente virtual:
+   Windows:
+   venv\Scripts\activate
+
+   Linux/macOS:
+   source venv/bin/activate
+
+4. Instalar dependências:
+   pip install -r requirements.txt
+
+5. Configurar o arquivo .env:
+   MONGO_URI=
+   REDIS_HOST=
+   REDIS_PORT=
+   REDIS_USERNAME=
+   REDIS_PASSWORD=
+
+6. Executar a API:
+   uvicorn main:app --reload
+
+7. Executar o subscriber Redis (em outro terminal):
+   python subscriber.py
+
+---
+
+## Considerações Finais
+
+O sistema demonstra a aplicação prática de:
+
+- Modelagem NoSQL
+- Integração com APIs externas
+- Cache distribuído
+- Mensageria com Redis
+
+O projeto foi estruturado visando separação de responsabilidades, clareza de código e facilidade de manutenção.
