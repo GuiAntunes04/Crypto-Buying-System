@@ -128,11 +128,11 @@ A modelagem orientada a documento permite flexibilidade e expansão futura.
    pip install -r requirements.txt
 
 5. Configurar o arquivo .env:
-   MONGO_URI=
-   REDIS_HOST=
-   REDIS_PORT=
-   REDIS_USERNAME=
-   REDIS_PASSWORD=
+   - MONGO_URI=
+   - REDIS_HOST=
+   - REDIS_PORT=
+   - REDIS_USERNAME=
+   - REDIS_PASSWORD=
 
 6. Executar a API:
    uvicorn main:app --reload
@@ -151,4 +151,3 @@ O sistema demonstra a aplicação prática de:
 - Cache distribuído
 - Mensageria com Redis
 
-O projeto foi estruturado visando separação de responsabilidades, clareza de código e facilidade de manutenção.
