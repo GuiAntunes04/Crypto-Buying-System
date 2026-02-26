@@ -55,15 +55,15 @@ A aplicação é exposta por meio de uma API REST construída com FastAPI e util
 
 Estrutura modular do projeto:
 
-/routes  
-/services  
-/database  
+/routes/...
+/services/...
+/connections/...
 /subscriber.py  
 /main.py  
 
 - Routes: definição dos endpoints
 - Services: regras de negócio
-- Database: conexão com MongoDB
+- Connections: conexão com MongoDB e Redis
 - Subscriber: consumidor de eventos Redis
 - Main: inicialização da aplicação
 
