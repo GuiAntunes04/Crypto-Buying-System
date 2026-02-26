@@ -15,10 +15,6 @@ if "usuario_logado" not in st.session_state:
 
 
 def api_request(method, endpoint, **kwargs):
-    """
-    Função central para requisições protegidas.
-    Trata automaticamente sessão expirada.
-    """
     url = f"{API_URL}{endpoint}"
 
     if method == "GET":
@@ -68,10 +64,11 @@ if st.session_state.usuario_logado is None:
 MAPA_CRIPTO = {
     "BTC": "Bitcoin",
     "ETH": "Ethereum",
-    "ADA": "Cardano"
+    "ADA": "Cardano",
+    "SOL": "Solana",
+    "HBAR": "Hedera",
+    "XRP": "Ripple"
 }
-
-MAPA_REVERSO = {v: k for k, v in MAPA_CRIPTO.items()}
 
 # ============================================================
 # 📌 SIDEBAR
@@ -95,23 +92,23 @@ pagina = st.sidebar.radio(
 
 if pagina == "Dashboard":
 
-    st.subheader("👤 Patrimônio por Usuário")
+    st.subheader("📊 Resumo da Carteira")
 
-    response = api_request("GET", "/patrimonio/usuario")
+    response = api_request(
+        "GET",
+        f"/analytics/resumo/{st.session_state.usuario_logado}"
+    )
 
     if response.status_code == 200:
         data = response.json()
 
         if data:
             df = pd.DataFrame(data)
-            df.rename(columns={"_id": "Usuário"}, inplace=True)
-
             st.dataframe(df, use_container_width=True)
 
-            if "patrimonio" in df.columns:
-                st.bar_chart(df.set_index("Usuário")["patrimonio"])
+            st.bar_chart(df.set_index("ticker")["valor_atual"])
         else:
-            st.info("Nenhum dado encontrado.")
+            st.info("Nenhuma posição encontrada.")
     else:
         st.error("Erro ao buscar dados.")
 
@@ -122,55 +119,59 @@ if pagina == "Dashboard":
 
 elif pagina == "Cadastrar Transação":
 
-    st.subheader("➕ Inserir Transação")
+    st.subheader("➕ Executar Trade")
 
     tab1, tab2 = st.tabs(["Compra", "Venda"])
 
-    def cadastrar(tipo):
-        payload = [{
+    def cadastrar(tipo, ticker, quantidade):
+
+        payload = {
             "usuario_id": st.session_state.usuario_logado,
-            "ativo": MAPA_CRIPTO[ticker],
             "ticker": ticker,
             "tipo": tipo,
-            "quantidade": quantidade,
-            "preco_unitario": preco,
-            "localizacao": {
-                "type": "Point",
-                "coordinates": [0, 0]
-            }
-        }]
+            "quantidade": quantidade
+        }
 
         response = api_request(
             "POST",
-            "/transacoes/batch",
+            "/trade/",
             json=payload
         )
 
         if response.status_code == 200:
-            st.success(f"{tipo.capitalize()} cadastrada com sucesso!")
+            data = response.json()
+
+            st.success(f"{tipo.capitalize()} executada com sucesso!")
+
+            st.write("🆔 ID da transação:", data["_id"])
+            st.write("💰 Preço executado:", f"${data['preco_unitario']:,.2f}")
+            st.write("📦 Quantidade:", data["quantidade"])
+            st.write("🕒 Timestamp:", data["timestamp"])
         else:
-            st.error("Erro ao cadastrar transação.")
+            st.error("Erro ao executar transação.")
 
     # ---------------- COMPRA ----------------
     with tab1:
 
-        ticker = st.selectbox("Ticker", list(MAPA_CRIPTO.keys()), key="c_ticker")
-        quantidade = st.number_input("Quantidade", min_value=0.0, key="c_qtd")
-        preco = st.number_input("Preço Unitário", min_value=0.0, key="c_preco")
+        ticker_compra = st.selectbox("Ticker", list(MAPA_CRIPTO.keys()), key="c_ticker")
+        quantidade_compra = st.number_input("Quantidade", min_value=0.0, key="c_qtd")
 
-        if st.button("Cadastrar Compra"):
-            cadastrar("compra")
+        if st.button("Executar Compra"):
+            cadastrar("compra", ticker_compra, quantidade_compra)
 
     # ---------------- VENDA ----------------
     with tab2:
 
-        ticker = st.selectbox("Ticker", list(MAPA_CRIPTO.keys()), key="v_ticker")
-        quantidade = st.number_input("Quantidade", min_value=0.0, key="v_qtd")
-        preco = st.number_input("Preço Unitário", min_value=0.0, key="v_preco")
+        ticker_venda = st.selectbox("Ticker", list(MAPA_CRIPTO.keys()), key="v_ticker")
+        quantidade_venda = st.number_input("Quantidade", min_value=0.0, key="v_qtd")
 
-        if st.button("Cadastrar Venda"):
-            cadastrar("venda")
+        if st.button("Executar Venda"):
+            cadastrar("venda", ticker_venda, quantidade_venda)
 
+
+# ============================================================
+# 💰 LUCRO / PREJUÍZO
+# ============================================================
 
 # ============================================================
 # 💰 LUCRO / PREJUÍZO
@@ -178,33 +179,76 @@ elif pagina == "Cadastrar Transação":
 
 elif pagina == "Lucro/Prejuízo":
 
-    st.subheader("💰 Calcular Lucro/Prejuízo (FIFO)")
+    st.subheader("💰 Lucro / Prejuízo (Preço Médio)")
 
-    ticker = st.selectbox("Ticker", list(MAPA_CRIPTO.keys()))
-    preco_atual = st.number_input("Preço Atual", min_value=0.0)
+    modo = st.radio(
+        "Escolha o modo:",
+        ["Geral", "Por Moeda"]
+    )
 
-    if st.button("Calcular"):
+    # ---------------- LUCRO GERAL ----------------
+    if modo == "Geral":
 
         response = api_request(
             "GET",
-            f"/analytics/lucro-prejuizo/usuario/{st.session_state.usuario_logado}",
-            params={
-                "ticker": ticker,
-                "preco_atual": preco_atual
-            }
+            f"/analytics/lucro-prejuizo/{st.session_state.usuario_logado}"
         )
 
         if response.status_code == 200:
+
             data = response.json()
 
-            if data["lucro_prejuizo"] is None:
-                st.warning("Usuário não possui saldo dessa criptomoeda.")
+            if not data["moedas"]:
+                st.info("Usuário não possui posições.")
             else:
-                valor = data["lucro_prejuizo"]
+                df = pd.DataFrame(data["moedas"])
+                st.dataframe(df, use_container_width=True)
 
-                if valor >= 0:
-                    st.success(f"Lucro: ${valor:,.2f}")
+                st.bar_chart(df.set_index("ticker")["lucro_prejuizo"])
+
+                st.divider()
+
+                total = data["lucro_total"]
+
+                if total >= 0:
+                    st.success(f"Lucro Total: ${total:,.2f}")
                 else:
-                    st.error(f"Prejuízo: ${valor:,.2f}")
+                    st.error(f"Prejuízo Total: ${total:,.2f}")
+
+        else:
+            st.error("Erro ao calcular lucro/prejuízo.")
+
+
+    # ---------------- LUCRO POR MOEDA ----------------
+    else:
+
+        ticker = st.selectbox("Selecione a moeda", list(MAPA_CRIPTO.keys()))
+
+        response = api_request(
+            "GET",
+            f"/analytics/lucro-prejuizo/{st.session_state.usuario_logado}",
+            params={"ticker": ticker}
+        )
+
+        if response.status_code == 200:
+
+            data = response.json()
+
+            if not data:
+                st.info("Usuário não possui posição nessa moeda.")
+            else:
+                st.write("📦 Quantidade Atual:", data["quantidade_atual"])
+                st.write("💵 Preço Médio:", f"${data['preco_medio']:,.2f}")
+                st.write("📈 Preço Atual:", f"${data['preco_atual']:,.2f}")
+
+                lucro = data["lucro_prejuizo"]
+
+                st.divider()
+
+                if lucro >= 0:
+                    st.success(f"Lucro: ${lucro:,.2f}")
+                else:
+                    st.error(f"Prejuízo: ${lucro:,.2f}")
+
         else:
             st.error("Erro ao calcular lucro/prejuízo.")
