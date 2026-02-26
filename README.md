@@ -3,6 +3,13 @@
 API para gerenciamento de operações de compra e venda de criptomoedas, com cálculo de lucro/prejuízo, consulta de preços em tempo real e camada de cache utilizando Redis. O sistema foi desenvolvido com foco em desempenho, escalabilidade e boas práticas de arquitetura para aplicações NoSQL.
 
 ---
+## Demonstração
+
+A interface de usuário está disponível em:
+
+https://crypto-buying-system.streamlit.app/
+
+---
 
 ## Descrição
 
