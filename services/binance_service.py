@@ -20,7 +20,7 @@ def get_preco_atual(ticker: str):
     response = requests.get(BINANCE_URL, params={"symbol": symbol})
 
     if response.status_code != 200:
-        raise Exception("Erro ao buscar preço na Binance")
+        raise Exception(f"Erro Binance: {response.status_code} - {response.text}")
 
     preco = float(response.json()["price"])
 
