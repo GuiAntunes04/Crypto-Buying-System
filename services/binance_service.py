@@ -1,7 +1,7 @@
 import requests
 from connections.redis_client import get_redis_client
 
-BINANCE_URL = "https://api.binance.com/api/v3/ticker/price"
+BINANCE_URL = "https://api.binance.us/api/v3/ticker/price"
 
 redis_client = get_redis_client()
 
