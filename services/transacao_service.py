@@ -33,6 +33,7 @@ def executar_transacao(usuario_id: str, ticker: str, tipo: str, quantidade: floa
     redis_client.publish(
         "canal_transacoes",
         json.dumps({
+            "transacao_id": str(result.inserted_id),
             "usuario_id": usuario_id,
             "ticker": ticker,
             "tipo": tipo,

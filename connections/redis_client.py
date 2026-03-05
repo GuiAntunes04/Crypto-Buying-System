@@ -1,6 +1,10 @@
 import redis
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def get_redis_client():
     return redis.Redis(
         host=os.getenv("REDIS_HOST"),
